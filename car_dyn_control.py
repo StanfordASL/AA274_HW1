@@ -48,11 +48,9 @@ def ctrl_traj(x,y,th,dyn_state,ctrl_prev,x_d,y_d,xd_d,yd_d,xdd_d,ydd_d,x_g,y_g,t
     return np.array([V, om, dyn_state_up])
 
 def wrapToPi(a):
-    b = a
-    for i in range(len(a)):
-        if a[i] < -np.pi or a[i] > np.pi:
-            b[i] = ((a[i]+np.pi) % (2*np.pi)) - np.pi
-    return b
+    if isinstance(a, list):    # backwards compatibility for lists (distinct from np.array)
+        return [(x + np.pi) % (2*np.pi) - np.pi for x in a]
+    return (a + np.pi) % (2*np.pi) - np.pi
 
 def ctrl_pose (x,y,th,x_g,y_g,th_g):
     #(x,y,th): current state
