@@ -1,9 +1,10 @@
 from sys import argv
 import numpy as np
 from scipy.integrate import odeint
-from scipy import linalg
-import car_dyn_control as cdc
 import matplotlib.pyplot as plt
+
+from utils import car_dyn
+from P3_pose_stabilization import ctrl_pose
 
 # unpack argv
 script_name,x_0, y_0, th_0, t_end = argv
@@ -39,11 +40,11 @@ x = state[0,:]
 ctrl = np.zeros((N,2))
 
 for i in range(N): #t[0]...t[N-1]
-    ctrl_fbck = cdc.ctrl_pose(x[0],x[1],x[2],x_g,y_g,th_g)
+    ctrl_fbck = ctrl_pose(x[0],x[1],x[2],x_g,y_g,th_g)
     ctrl[i,0] = ctrl_fbck[0]
     ctrl[i,1] = ctrl_fbck[1]
 
-    d_state = odeint(cdc.car_dyn,x,np.array([time[i], time[i+1]]), args = (ctrl[i,:],[0,0]))
+    d_state = odeint(car_dyn,x,np.array([time[i], time[i+1]]), args = (ctrl[i,:],[0,0]))
     x = d_state[1,:]
     state[i+1,:] = x
 

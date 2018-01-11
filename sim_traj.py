@@ -1,9 +1,10 @@
 from sys import argv
 import numpy as np
 from scipy.integrate import odeint
-from scipy import linalg
-import car_dyn_control as cdc
 import matplotlib.pyplot as plt
+
+from utils import car_dyn
+from P4_trajectory_tracking import ctrl_traj
 
 # unpack argv
 script_name, filename, x_0, y_0, th_0, dist, ctrl = argv
@@ -17,14 +18,6 @@ print '(x_0, y_0, th_0) = (%.2f, %.2f, %.2f)' %(x_0, y_0, th_0)
 print 'Noise: %i' %dist
 print 'Control: %s' %ctrl
 
-
-#filename = 'traj_df_data.npy'
-#filename = 'traj_opt_data.txt'
-#x_0 = 0
-#y_0 = 0
-#th_0 = -0.5*np.pi
-#dist = False
-#ctrl = 'closed'
 data = np.load(filename)
 
 x_g = data[-1,0]
@@ -66,7 +59,6 @@ if n_runs == 2:
 # Simulate
 for n in range(n_runs):
     x = state[n][0,:]
-    dyn_state = data[0,3]
     ctrl_prev = data[0,3:5]
 
     if n == 1:
@@ -85,12 +77,11 @@ for n in range(n_runs):
             ctrl[n][i,:] = data[idx,3:5]
         else:
             #Closed-loop
-            ctrl_fbck = cdc.ctrl_traj(x[0],x[1],x[2],dyn_state,ctrl_prev,data[idx,0],data[idx,1],data[idx,5],data[idx,6],data[idx,7],data[idx,8],x_g,y_g,th_g)
-            ctrl[n][i,:] = ctrl_fbck[0:2]
-            dyn_state = ctrl_fbck[2]
+            ctrl_fbck = ctrl_traj(x[0],x[1],x[2],ctrl_prev,data[idx,0],data[idx,1],data[idx,5],data[idx,6],data[idx,7],data[idx,8],x_g,y_g,th_g)
+            ctrl[n][i,:] = ctrl_fbck
             ctrl_prev = ctrl[n][i,:]
 
-        d_state = odeint(cdc.car_dyn,x,np.array([time[n][i], time[n][i+1]]), args = (ctrl[n][i,:],noise[i,:]))
+        d_state = odeint(car_dyn,x,np.array([time[n][i], time[n][i+1]]), args = (ctrl[n][i,:],noise[i,:]))
         x = d_state[1,:]
         state[n][i+1,:] = x
 
@@ -100,9 +91,9 @@ for n in range(n_runs):
     plt.plot(state[n][:,0],state[n][:,1],linewidth=2)
 
 if (n_runs == 2) and dist:
-    plt.legend(['Without noise', 'With noise'],loc='center left', bbox_to_anchor=(1,0.5))
+    plt.legend(['Without noise', 'With noise'])
 elif (n_runs == 2) and ~dist:
-    plt.legend(['Open-loop', 'Closed-loop'], loc='center left', bbox_to_anchor=(1,0.5))
+    plt.legend(['Open-loop', 'Closed-loop'])
 plt.grid('on')
 plt.plot(x_0,y_0,'go',markerfacecolor='green',markersize=15)
 plt.plot(x_g,y_g,'ro',markerfacecolor='red', markersize=15)
@@ -113,7 +104,7 @@ plt.subplot(2,1,1)
 plt.plot(time[0][0:-1], ctrl[0],linewidth=2)
 plt.grid('on')
 plt.xlabel('Time [s]')
-plt.legend(['V [m/s]', '$\omega$ [rad/s]'],loc='center left', bbox_to_anchor=(1,0.5))
+plt.legend(['V [m/s]', '$\omega$ [rad/s]'])
 if dist: plt.title('Without noise')
 else: plt.title('Open-loop')
 
@@ -122,7 +113,7 @@ if n_runs == 2:
     plt.plot(time[1][0:-1], ctrl[1],linewidth=2)
     plt.grid('on')
     plt.xlabel('Time [s]')
-    plt.legend(['V [m/s]', '$\omega$ [rad/s]'],loc='center left', bbox_to_anchor=(1,0.5))
+    plt.legend(['V [m/s]', '$\omega$ [rad/s]'])
     if dist: plt.title('With noise')
     else: plt.title('Closed-loop')
 
