@@ -2,7 +2,6 @@ import numpy as np
 import math
 import scikits.bvp_solver
 import matplotlib.pyplot as plt
-# testing
 
 def q1_ode_fun(tau, z):
 
