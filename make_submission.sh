@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+zip -r hw1.zip P1_optimal_control.py P2_differential_flatness.py P3_pose_stabilization.py P4_trajectory_tracking.py sim_parking.py sim_traj.py utils.py ~/catkin_ws/src/hw1/scripts/publisher.py ~/catkin_ws/src/hw1/scripts/subscriber.py ~/catkin_ws/src/asl_turtlebot/scripts/controller.py ~/catkin_ws/gazebo.bag ~/catkin_ws/name.bag
